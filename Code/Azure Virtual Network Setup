@@ -1,1 +1,54 @@
 
+az login
+
+az account set --subscription "Your-Subscription-ID"
+
+az group create --name RG1 --location francecentral
+
+az network vnet create \
+  --resource-group RG1 \
+  --name NetMazeVNET \
+  --address-prefix 10.0.0.0/16 \
+  --location francecentral
+
+WebApp Subnet (10.0.1.0/24):
+az network vnet subnet create \
+  --resource-group RG1 \
+  --vnet-name NetMazeVNET \
+  --name WebAppSubnet \
+  --address-prefix 10.0.1.0/24
+
+Database Subnet (10.0.2.0/24):
+az network vnet subnet create \
+  --resource-group RG1 \
+  --vnet-name NetMazeVNET \
+  --name DatabaseSubnet \
+  --address-prefix 10.0.2.0/24
+
+Admin Subnet (10.0.3.0/24):
+az network vnet subnet create \
+  --resource-group RG1 \
+  --vnet-name NetMazeVNET \
+  --name AdminSubnet \
+  --address-prefix 10.0.3.0/24
+
+GatewaySubnet (10.0.255.0/27):
+az network vnet subnet create \
+  --resource-group RG1 \
+  --vnet-name NetMazeVNET \
+  --name GatewaySubnet \
+  --address-prefix 10.0.255.0/27
+
+Verify VNet and Subnets:
+az network vnet show --resource-group RG1 --name NetMazeVNET
+
+Add Network Security Groups (NSGs)
+az network nsg create \
+  --resource-group RG1 \
+  --name WebAppNSG
+
+az network vnet subnet update \
+  --resource-group RG1 \
+  --vnet-name NetMazeVNET \
+  --name WebAppSubnet \
+  --network-security-group WebAppNSG
