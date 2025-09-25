@@ -1,0 +1,85 @@
+Create a Public IP Address for the VPN Gateway:
+az network public-ip create \
+  --resource-group RG1 \
+  --name NetMazeVPNPublicIP \
+  --allocation-method Dynamic \
+  --sku Basic
+
+Create the Virtual Network Gateway:
+az network vnet-gateway create \
+  --resource-group RG1 \
+  --name NetMazeVPNGateway \
+  --public-ip-address NetMazeVPNPublicIP \
+  --vnet NetMazeVNET \
+  --gateway-type VPN \
+  --vpn-type RouteBased \
+  --sku VpnGw1 \
+  --generation Generation1
+
+Wait for the VPN Gateway to be created:
+az network vnet-gateway show \
+  --resource-group RG1 \
+  --name NetMazeVPNGateway
+
+Create a Public IP Address for the VPN Gateway of the on-premises vnet:
+az network public-ip create \
+  --resource-group RG2 \
+  --name OnPremVPNPublicIP \
+  --allocation-method Dynamic \
+  --sku Basic
+
+Create the Virtual Network Gateway of the on-premises vnet:
+az network vnet-gateway create \
+  --resource-group RG2 \
+  --name OnPremVPNGateway \
+  --public-ip-address OnPremVPNPublicIP \
+  --vnet OnPremVNET \
+  --gateway-type VPN \
+  --vpn-type RouteBased \
+  --sku VpnGw1 \
+  --generation Generation1
+
+Wait for the VPN Gateway to be created:
+az network vnet-gateway show \
+  --resource-group RG2 \
+  --name OnPremVPNGateway
+
+Create the Local Network Gateway:
+az network local-gateway create \
+  --resource-group RG1 \
+  --name NetMazeLocalGateway \
+  --gateway-ip-address <NetMazeVPNGateway-public-ip> \
+  --local-address-prefixes 10.0.0.0/16
+
+Create the Local Network Gateway of the on-premises vnet:
+az network local-gateway create \
+  --resource-group RG2 \
+  --name OnPremLocalGateway \
+  --gateway-ip-address <OnPremVPNGateway-public-ip> \
+  --local-address-prefixes 10.1.0.0/16
+
+Create the VPN Connection for NetMazeVPNGateway
+az network vpn-connection create \
+  --resource-group RG1 \
+  --name NetMazeToOnPrem \
+  --vnet-gateway1 NetMazeVPNGateway \
+  --local-gateway2 OnPremLocalGateway \
+  --shared-key "YourSharedSecret"
+
+Create the VPN Connection for OnPremVPNGateway
+az network vpn-connection create \
+  --resource-group RG2 \
+  --name OnPremToNetMaze \
+  --vnet-gateway1 OnPremVPNGateway \
+  --local-gateway2 NetMazeLocalGateway \
+  --shared-key "YourSharedSecret"
+
+Check VPN Connection Status:
+az network vpn-connection show \
+  --resource-group RG1 \
+  --name NetMazeToOnPrem
+
+Test Connectivity:
+ping <VM-IP-in-OnPremVNet>
+
+ping <VM-IP-in-MyVNet>
