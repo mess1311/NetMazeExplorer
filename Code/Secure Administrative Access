@@ -1,0 +1,62 @@
+Create the AzureBastionSubnet
+az network vnet subnet create \
+  --resource-group RG1 \
+  --vnet-name NetMazeVNET \
+  --name AzureBastionSubnet \
+  --address-prefix 10.0.255.0/27
+
+Create the Bastion Host
+az network bastion create \
+  --resource-group RG1 \
+  --name MyBastionHost \
+  --vnet-name NetMazeVNET \
+  --subnet AzureBastionSubnet \
+  --public-ip-address MyBastionPublicIP \
+  --location francecentral
+
+Note: If you don’t already have a public IP resource, create one:
+az network public-ip create \
+  --resource-group RG1 \
+  --name MyBastionPublicIP \
+  --sku Standard \
+  --allocation-method Static \
+  --location francecentral
+
+Verify Bastion Deployment
+az network bastion show \
+  --resource-group RG1 \
+  --name MyBastionHost
+
+ remove Public IPs
+az network nic ip-config update \
+  --resource-group RG1 \
+  --nic-name MyWebAppVMNic \
+  --name MyWebAppIPConfig \
+  --remove publicIpAddress
+
+Check Network Security Group (NSG) Rules
+For RDP (Windows VMs):
+az network nsg rule create \
+  --resource-group RG1 \
+  --nsg-name MyVMNSG \
+  --name Allow-RDP-FromBastion \
+  --protocol Tcp \
+  --priority 100 \
+  --direction Inbound \
+  --access Allow \
+  --destination-port-ranges 3389 \
+  --source-address-prefixes 10.0.255.0/27 \
+  --destination-address-prefixes '*'
+
+For SSH (Linux VMs):
+az network nsg rule create \
+  --resource-group RG1 \
+  --nsg-name MyVMNSG \
+  --name Allow-SSH-FromBastion \
+  --protocol Tcp \
+  --priority 100 \
+  --direction Inbound \
+  --access Allow \
+  --destination-port-ranges 22 \
+  --source-address-prefixes 10.0.255.0/27 \
+  --destination-address-prefixes '*'
