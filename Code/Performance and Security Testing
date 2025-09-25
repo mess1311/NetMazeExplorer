@@ -1,0 +1,19 @@
+Test Data Transfer:
+# On the server side
+iperf3 -s
+
+# On the client side (on the remote machine)
+iperf3 -c <server-ip> -t 60
+
+
+Scenario 1: Unauthorized Access to Azure Resources (Via NSG Bypass):
+curl http://<VM_Private_IP>:80   # Should be blocked if outside allowed range
+
+Scenario 2: Unauthorized Access to On-Premises Resources:
+ping <on-premises-IP>    # Should be blocked if VPN access isn't properly configured
+
+Scenario 3: Attempt to Access Database Subnet:
+telnet <Database_Subnet_IP> 1433  # SQL port should be allowed if NSG allows it
+
+Scenario 4: Bypassing VPN Access with Public IP:
+curl http://<public-ip-of-on-prem>  # Should be blocked if firewall rules are correctly applied
