@@ -1,0 +1,62 @@
+Create a Network Interface (NIC) for the VM:
+az network nic create \
+  --resource-group RG1 \
+  --name WebAppVMNic \
+  --vnet-name NetMazeVNET \
+  --subnet WebAppSubnet \
+  --ip-config-name MyWebAppIPConfig \
+  --public-ip-address "" \
+  --private-ip-address 10.0.1.4
+
+Create the VM in the WebApp Subnet:
+az vm create \
+  --resource-group RG1 \
+  --name WebAppVM \
+  --nics WebAppVMNic \
+  --image Win2019Datacenter \
+  --admin-username azureuser \
+  --admin-password <YourPassword> \
+  --size Standard_B1ms \
+  --location francecentral
+
+Create a NIC for the Database Server VM:
+az network nic create \
+  --resource-group RG1 \
+  --name DatabaseVMNic \
+  --vnet-name NetMazeVNET \
+  --subnet DatabaseSubnet \
+  --ip-config-name MyDatabaseIPConfig \
+  --public-ip-address "" \
+  --private-ip-address 10.0.2.4
+
+Create the VM in the Database Subnet:
+az vm create \
+  --resource-group RG1 \
+  --name DatabaseVM \
+  --nics DatabaseVMNic \
+  --image UbuntuLTS \
+  --admin-username azureuser \
+  --admin-password <YourPassword> \
+  --size Standard_B1ms \
+  --location francecentral
+
+Create a NIC for the Admin VM:
+az network nic create \
+  --resource-group RG1 \
+  --name AdminVMNic \
+  --vnet-name NetMazeVNET \
+  --subnet AdminSubnet \
+  --ip-config-name MyAdminIPConfig \
+  --public-ip-address "" \
+  --private-ip-address 10.0.3.4
+
+ Create the Admin VM:
+az vm create \
+  --resource-group RG1 \
+  --name AdminVM \
+  --nics AdminVMNic \
+  --image Win2019Datacenter \
+  --admin-username azureuser \
+  --admin-password <YourPassword> \
+  --size Standard_B1ms \
+  --location francecentral
