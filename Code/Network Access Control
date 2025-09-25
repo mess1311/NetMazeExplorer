@@ -1,0 +1,169 @@
+Create NSG for WebApp Subnet:
+az network nsg create \
+  --resource-group RG1 \
+  --name WebAppNSG \
+  --location francecentral
+
+Create NSG for Database Subnet:
+az network nsg create \
+  --resource-group RG1 \
+  --name DatabaseNSG \
+  --location francecentral
+
+ Create NSG for Admin Subnet:
+az network nsg create \
+  --resource-group RG1 \
+  --name AdminNSG \
+  --location francecentral
+
+WebAppNSG (WebApp Subnet):
+# Allow HTTP traffic (port 80)
+az network nsg rule create \
+  --resource-group RG1 \
+  --nsg-name WebAppNSG \
+  --name Allow-HTTP \
+  --protocol Tcp \
+  --priority 100 \
+  --direction Inbound \
+  --access Allow \
+  --destination-port-ranges 80 \
+  --source-address-prefixes '*' \
+  --destination-address-prefixes '*'
+
+# Allow HTTPS traffic (port 443)
+az network nsg rule create \
+  --resource-group RG1 \
+  --nsg-name WebAppNSG \
+  --name Allow-HTTPS \
+  --protocol Tcp \
+  --priority 200 \
+  --direction Inbound \
+  --access Allow \
+  --destination-port-ranges 443 \
+  --source-address-prefixes '*' \
+  --destination-address-prefixes '*'
+
+# Allow outbound traffic (to the internet)
+az network nsg rule create \
+  --resource-group RG1 \
+  --nsg-name WebAppNSG \
+  --name Allow-Outbound \
+  --protocol '*' \
+  --priority 300 \
+  --direction Outbound \
+  --access Allow \
+  --destination-address-prefixes '*' \
+  --source-address-prefixes '*'
+
+DatabaseNSG (Database Subnet):
+# Allow inbound traffic only from the WebApp Subnet (10.0.1.0/24) for database traffic
+az network nsg rule create \
+  --resource-group RG1 \
+  --nsg-name DatabaseNSG \
+  --name Allow-FromWebApp \
+  --protocol Tcp \
+  --priority 100 \
+  --direction Inbound \
+  --access Allow \
+  --source-address-prefixes 10.0.1.0/24 \
+  --destination-port-ranges 3306 \  # Example for MySQL. Use appropriate port for your DB
+  --destination-address-prefixes '*'
+
+# Deny all other inbound traffic (explicit deny)
+az network nsg rule create \
+  --resource-group RG1 \
+  --nsg-name DatabaseNSG \
+  --name Deny-AllOtherInbound \
+  --protocol '*' \
+  --priority 200 \
+  --direction Inbound \
+  --access Deny \
+  --destination-port-ranges '*' \
+  --source-address-prefixes '*' \
+  --destination-address-prefixes '*'
+
+# Allow outbound traffic (to the internet)
+az network nsg rule create \
+  --resource-group RG1 \
+  --nsg-name DatabaseNSG \
+  --name Allow-Outbound \
+  --protocol '*' \
+  --priority 300 \
+  --direction Outbound \
+  --access Allow \
+  --destination-address-prefixes '*' \
+  --source-address-prefixes '*'
+
+ AdminNSG (Admin Subnet)
+# Allow inbound SSH (for Linux) from a specific range (replace <YourIP> with your admin IP)
+az network nsg rule create \
+  --resource-group RG1 \
+  --nsg-name AdminNSG \
+  --name Allow-SSH \
+  --protocol Tcp \
+  --priority 100 \
+  --direction Inbound \
+  --access Allow \
+  --destination-port-ranges 22 \
+  --source-address-prefixes <YourIP>/32 \
+  --destination-address-prefixes '*'
+
+# Allow inbound RDP (for Windows) from a specific range (replace <YourIP> with your admin IP)
+az network nsg rule create \
+  --resource-group RG1 \
+  --nsg-name AdminNSG \
+  --name Allow-RDP \
+  --protocol Tcp \
+  --priority 200 \
+  --direction Inbound \
+  --access Allow \
+  --destination-port-ranges 3389 \
+  --source-address-prefixes <YourIP>/32 \
+  --destination-address-prefixes '*'
+
+# Deny all other inbound traffic (explicit deny)
+az network nsg rule create \
+  --resource-group RG1 \
+  --nsg-name AdminNSG \
+  --name Deny-AllOtherInbound \
+  --protocol '*' \
+  --priority 300 \
+  --direction Inbound \
+  --access Deny \
+  --destination-port-ranges '*' \
+  --source-address-prefixes '*' \
+  --destination-address-prefixes '*'
+
+# Allow outbound traffic (to the internet)
+az network nsg rule create \
+  --resource-group RG1 \
+  --nsg-name AdminNSG \
+  --name Allow-Outbound \
+  --protocol '*' \
+  --priority 400 \
+  --direction Outbound \
+  --access Allow \
+  --destination-address-prefixes '*' \
+  --source-address-prefixes '*'
+
+Associate NSGs with Subnets
+ Associate WebAppNSG with WebApp Subnet:
+az network vnet subnet update \
+  --resource-group RG1 \
+  --vnet-name NetMazeVNET \
+  --name WebAppSubnet \
+  --network-security-group WebAppNSG
+
+Associate DatabaseNSG with Database Subnet:
+az network vnet subnet update \
+  --resource-group RG1 \
+  --vnet-name NetMazeVNET \
+  --name DatabaseSubnet \
+  --network-security-group DatabaseNSG
+
+Associate AdminNSG with Admin Subnet:
+az network vnet subnet update \
+  --resource-group RG1 \
+  --vnet-name NetMazeVNET \
+  --name AdminSubnet \
+  --network-security-group AdminNSG
