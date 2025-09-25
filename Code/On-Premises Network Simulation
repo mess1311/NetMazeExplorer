@@ -1,1 +1,16 @@
+Create the Second Resource Group (if needed):
+az group create --name RG2 --location spaincentral
 
+Create the Second Virtual Network (On-Premises Simulation VNet):
+az network vnet create \
+  --resource-group RG2 \
+  --name OnPremVNET \
+  --address-prefix 10.1.0.0/16 \
+  --location spaincentral
+
+Create Subnet for the On-Premises Simulation VNet:
+az network vnet subnet create \
+  --resource-group RG2 \
+  --vnet-name OnPremVNET \
+  --name OnPremSubnet \
+  --address-prefix 10.1.1.0/24
