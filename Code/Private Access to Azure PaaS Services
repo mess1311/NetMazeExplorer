@@ -1,0 +1,29 @@
+Configure Private Endpoint Details
+az network private-endpoint create \
+  --resource-group RG1 \
+  --name MySQLPrivateEndpoint \
+  --vnet-name NetMazeVNET \
+  --subnet MyPrivateEndpointSubnet \
+  --private-connection-resource-id "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Sql/servers/{sqlServerName}" \
+  --group-id sqlServer
+
+Enable DNS Integration
+<sqlServerName>.database.windows.net
+
+
+Configure DNS for Private Endpoint
+az network private-dns zone create \
+  --resource-group RG1 \
+  --name privatelink.database.windows.net
+
+az network private-dns link vnet create \
+  --resource-group RG1 \
+  --zone-name privatelink.database.windows.net \
+  --name MyVNetLink \
+  --virtual-network NetMazeVNET \
+  --registration-enabled false
+
+ Verify Connectivity to Azure SQL Database Over Private Endpoint
+nslookup <sqlServerName>.database.windows.net
+
+sqlcmd -S <sqlServerName>.database.windows.net -U <your_sql_username> -P <your_sql_password>
